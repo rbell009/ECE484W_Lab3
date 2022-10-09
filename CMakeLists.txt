@@ -14,17 +14,21 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Network)
 
 set(PROJECT_SOURCES
         main.cpp
         imagegen2.cpp
         imagegen2.h
         imagegen2.ui
+        udpclient.cpp
+        udpclient.h
 )
 
 set(OpenCV_DIR "C://opencv//build")
 find_package(OpenCV 4.2.0 REQUIRED)
 include_directories((${OpenCV_INCLUDE_DIRS}))
+
 
 
 
@@ -52,7 +56,7 @@ else()
 endif()
 
 target_link_libraries(Lab1_2 PRIVATE Qt${QT_VERSION_MAJOR}::Widgets
-    ${OpenCV_LIBS})
+    ${OpenCV_LIBS} Qt${QT_VERSION_MAJOR}::Network)
 
 set_target_properties(Lab1_2 PROPERTIES
     MACOSX_BUNDLE_GUI_IDENTIFIER my.example.com
