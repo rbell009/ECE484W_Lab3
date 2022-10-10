@@ -12,6 +12,12 @@ public:
 
 signals:
 
+public slots:
+    void readReady();
+
+private:
+    QUdpSocket *cliSock;
+
 };
 
 #endif // UDPCLIENT_H
