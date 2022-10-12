@@ -21,8 +21,6 @@ set(PROJECT_SOURCES
         imagegen2.cpp
         imagegen2.h
         imagegen2.ui
-        udpclient.cpp
-        udpclient.h
 )
 
 set(OpenCV_DIR "C://opencv//build")

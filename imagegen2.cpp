@@ -30,7 +30,7 @@ ImageGen2::ImageGen2(QWidget *parent)
     
     // Brightness Bar settings and location
     brightness = new QSlider(Qt::Horizontal,this);
-    brightness -> setRange(-100,100);
+    brightness -> setRange(-50,50);
     brightness -> setValue(0);
     brightness -> setGeometry(QRect(450,300,200,50));
     connect(brightness,&QSlider::sliderReleased,this,&ImageGen2::updateDisplay);
@@ -53,6 +53,21 @@ ImageGen2::ImageGen2(QWidget *parent)
     kill = new QPushButton("Save and Exit", this);
     kill -> setGeometry(QRect(100,500,150,25));
     connect(kill,&QPushButton::released,this,&ImageGen2::exitANDsave);
+
+    // Network Configuration
+    ack = false;
+    clientRead = new QUdpSocket(this);
+    clientWrite = new QUdpSocket(this);
+
+    clientRead -> bind(QHostAddress::LocalHost, clientRead->localPort());
+    clientWrite -> connectToHost(QHostAddress("192.168.0.97"),45546);
+
+    QString initMSG = "Start Coms";
+    QByteArray msg = initMSG.toUtf8();
+
+    connect(clientRead, SIGNAL(readyRead()),this, SLOT(readPending()));
+
+    clientWrite -> write(msg);
 
     ui->setupUi(this);
 }
@@ -109,6 +124,9 @@ void ImageGen2::updateDisplay()
 {
     int tempB;
     double tempC;
+
+    // Network Trigger
+    sendData();
 
     // Lazy exists to avoid errors with algorithm
     if (lazy == false)
@@ -199,5 +217,60 @@ void ImageGen2::exitANDsave()
 
     // Kills Program/GUI
     this -> close();
+}
+
+
+void ImageGen2::sendData()
+{
+    int contrastD, brightD;
+    String contrastS, brightS,tempC,tempB, msg;
+    QString holdMSG;
+    QByteArray sendMSG;
+
+    tempC = "0";
+    tempB = "0";
+
+    contrastD = Contrast->value() / 2;
+    brightD = brightness->value() + 50;
+
+    if (contrastD < 10)
+    {
+        contrastS = tempC + std::to_string(contrastD);
+    }
+    else
+    {
+        contrastS = std::to_string(contrastD);
+    }
+
+    if (brightD < 10)
+    {
+        brightS = tempB + std::to_string(brightD);
+    }
+    else
+    {
+        brightS = std::to_string(brightD);
+    }
+
+    msg = brightS + contrastS;
+    holdMSG = QString::fromStdString(msg);
+
+    sendMSG = holdMSG.toUtf8();
+
+    clientWrite -> write(sendMSG);
+
+}
+
+void ImageGen2::readPending()
+{
+    QByteArray DataIn;
+
+
+    while (clientRead->hasPendingDatagrams()) {
+        clientRead->readDatagram(DataIn.data(),-1,&sender,&sender_port);
+
+        QString DataMsg = QString(DataIn);
+
+        qDebug() << "Message From Server: " << DataMsg;
+    }
 }
 

@@ -11,6 +11,7 @@
 #include <QSlider>
 #include <string>
 #include <stdio.h>
+#include <QUdpSocket>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class ImageGen2; }
@@ -28,6 +29,12 @@ public:
     void display();
     void updateDisplay();
     void exitANDsave();
+    void sendData();
+
+public slots:
+    // Network Functions
+    void readPending();
+
 
 private:
     Ui::ImageGen2 *ui;
@@ -41,6 +48,11 @@ private:
     int bright;
     double cont;
     bool lazy;
+    QUdpSocket *clientWrite;
+    QUdpSocket *clientRead;
+    QHostAddress sender;
+    uint16_t sender_port;
+    bool ack;
 
 };
 #endif // IMAGEGEN2_H
