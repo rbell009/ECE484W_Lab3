@@ -59,15 +59,10 @@ ImageGen2::ImageGen2(QWidget *parent)
     clientRead = new QUdpSocket(this);
     clientWrite = new QUdpSocket(this);
 
-    clientRead -> bind(QHostAddress::LocalHost, clientRead->localPort());
-    clientWrite -> connectToHost(QHostAddress("192.168.0.97"),45546);
+    clientRead -> bind(QHostAddress::LocalHost, clientRead->localPort()); // Bind Reader to its own Port and IP
+    clientWrite -> connectToHost(QHostAddress("192.168.0.207"),45546); // Bind Writer to Server IP
 
-    QString initMSG = "Start Coms";
-    QByteArray msg = initMSG.toUtf8();
-
-    connect(clientRead, SIGNAL(readyRead()),this, SLOT(readPending()));
-
-    clientWrite -> write(msg);
+    connect(clientRead, SIGNAL(readyRead()),this, SLOT(readPending())); // Read Messages when Avaiable
 
     ui->setupUi(this);
 }
@@ -219,20 +214,21 @@ void ImageGen2::exitANDsave()
     this -> close();
 }
 
-
+// Function Purpose: Send Brightness and Contrast Data for use on HEX displays
 void ImageGen2::sendData()
 {
-    int contrastD, brightD;
-    String contrastS, brightS,tempC,tempB, msg;
+    int contrastD, brightD; // Integer Contrast and Brightness
+    String contrastS, brightS,tempC,tempB, msg; // Strings for making the msg
     QString holdMSG;
-    QByteArray sendMSG;
+    QByteArray sendMSG; // Msg Data
 
     tempC = "0";
     tempB = "0";
 
-    contrastD = Contrast->value() / 2;
-    brightD = brightness->value() + 50;
+    contrastD = Contrast->value() / 2; // Scale Contrast Data to 0-100
+    brightD = brightness->value() + 50; // Scale Brightness Data to 0-100
 
+    // These If Statements are checks to ensure that if a leading 0 is needed its there
     if (contrastD < 10)
     {
         contrastS = tempC + std::to_string(contrastD);
@@ -251,20 +247,25 @@ void ImageGen2::sendData()
         brightS = std::to_string(brightD);
     }
 
+    // Combine Data Strings to Make MSG
     msg = brightS + contrastS;
+
+    // Make Into QString and Format to send
     holdMSG = QString::fromStdString(msg);
 
     sendMSG = holdMSG.toUtf8();
 
+    // Write to Server
     clientWrite -> write(sendMSG);
 
 }
 
+// Function Purpose: Read Data from Server
 void ImageGen2::readPending()
 {
     QByteArray DataIn;
 
-
+    // Reads Avaiable Data from Server
     while (clientRead->hasPendingDatagrams()) {
         clientRead->readDatagram(DataIn.data(),-1,&sender,&sender_port);
 
